@@ -1,0 +1,9 @@
+    def mrs
+      url = "/mrs/search?db=all&q=#{id}"
+      {
+        :order => 3,
+        :title => 'MRS',
+        :url   => url,
+        :icon  => 'fa-external-link'
+      }
+    end
