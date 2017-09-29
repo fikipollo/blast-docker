@@ -1,0 +1,59 @@
+#!/bin/bash
+
+ACTION=$1
+PARAM_1=$2
+
+function restart_sequence_server {
+  pkill sequenceserver
+  if [ -z "$(ls -A /db)" ]; then
+    tar xzvf /usr/local/src/test.tar.gz -C /db/
+  fi
+  cd /db
+  #sequenceserver -d /db 2>&1 > /dev/stdout &
+}
+
+if [[ "$ACTION" == "rmfile" ]]; then
+  cwd=$(dirname $PARAM_1)
+  cd $cwd
+  cwd=$(pwd)
+  if [[ "$cwd" == "/db" ]]; then
+    rm $PARAM_1
+    restart_sequence_server
+    exit $?
+  elif [[ "$cwd" == "/raw" ]]; then
+      rm $PARAM_1
+      exit $?
+  else
+    exit 1
+  fi
+elif [[ "$ACTION" == "download_ncbi_db" ]]; then
+  tmpdir=$(mktemp -d);
+  cd $tmpdir;
+  ncbi-blast-dbs $PARAM_1;
+  if [[ "$?" == "0" ]]; then
+    rm *.tar.gz*
+    mv * /db/
+    rm -r $tmpdir
+    restart_sequence_server
+    exit 0
+  else
+    rm -r $tmpdir
+    exit 1
+  fi
+elif [[ "$ACTION" == "build_database" ]]; then
+  tmpdir=$(mktemp -d);
+  cd $tmpdir;
+  cp /raw/$PARAM_1 .
+  echo -e "y\n\n"  | sequenceserver -m -d .
+
+  if [[ "$?" == "0" ]]; then
+    restart_sequence_server
+    exit 0
+  else
+    rm -r $tmpdir
+    exit 1
+  fi
+elif [[ "$ACTION" == "restart_sequence_server" ]]; then
+  restart_sequence_server
+  exit 0
+fi

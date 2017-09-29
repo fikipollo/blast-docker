@@ -10,12 +10,16 @@ if [[ "$ADMIN_PASS" == "" ]]; then
     ADMIN_PASS="supersecret"
 fi
 
-chown -R rstudio:rstudio /home/rstudio/
-
 htpasswd -b /etc/nginx/.htpasswd $ADMIN_USER $ADMIN_PASS
 
 #Launch nginx and rserver
 service php7.0-fpm start
 service nginx start
 
-/init
+if [ -z "$(ls -A /db)" ]; then
+  tar xzvf /usr/local/src/test.tar.gz -C /db/
+fi
+
+sequenceserver -d /db & 2>&1 > /dev/stdout
+
+tail -f /dev/stdout

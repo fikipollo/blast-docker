@@ -1,88 +1,111 @@
 <?php
 
-function create_user($username, $passwd) {
-  if($username == "" || $passwd == ""){
-    return "";
-  }
-
+function download_ncbi_db($db){
   $message = "";
-  $users = getUsers();
-  foreach ($users as $user) {
-    if($user == $username){
-      $message = "User " . $username . "already exists. Password was updated.";
-      break;
-    }
-  }
 
-  $out = shell_exec('sudo useradd -m ' . $username);
-  $out = shell_exec('echo '. $username .':'. $passwd .' | sudo chpasswd');
-  $out = shell_exec('sudo chown -R '. $username .':'. $username .' /home/'. $username . '/');
-  if($message == ""){
-    $message = "The new user " . $username . " has been successfully created.";
+  if($db != ""){
+    $message = $message .  "<p>Downloading and installing database from NCBI...";
+    $out=[];
+    $exit_code=-1;
+    exec("sudo /usr/local/bin/admin_tools download_ncbi_db " . $db . " 2>&1", $out, $exit_code);
+    if($exit_code == 0){
+      $message = $message .  "<span class='text-success'>Done.</span></p>";
+    }else{
+      $message = $message .  "<span class='text-success'>Failed (Exit code" . $exit_code . ").</span></p>";
+      $message = $message .  "<b>Error log</b>";
+      $message = $message .  "<pre>";
+      foreach ($out as $line) {
+        $message = $message .  $line;
+      }
+      $message = $message .  "</pre>";
+    }
+  }else{
+    $message = $message .  "<p class='text-danger'>Database not found, unable to download.</p>";
   }
   return $message;
 }
 
-function create_students($total, $passwd_prefix) {
-  if($passwd_prefix == ""){
+function delete_files($files) {
+  if($files == ""){
     return "";
   }
 
-  /* 1. GET LAST USER ACCOUNT */
-  $students = getStudents();
-  $max=0;
-
-  foreach ($students as $student) {
-    $n = (int) str_replace("student","", $student);
-    if($n > $max){
-      $max = $n;
-    }
-    create_user($student, $passwd_prefix . $n);
-  }
-
-  if($total == "" || $total == 0){
-    return "The password for students has been updated.<br> New password is <i>".$passwd_prefix."[student number]</i>.<br>E.g. For student5, password will be <i>".$passwd_prefix."5</i>";
-  }
-
-  /*  2. ADD NEW USERS */
-  for ($x = 0; $x < $total; $x++) {
-    $max=$max + 1;
-    create_user("student" . $max, $passwd_prefix . $max);
-  }
-
-  return $total . " new student accounts have been created. The password for previous students has been updated.<br> New password is <i>".$passwd_prefix."[student number]</i>.<br>E.g. For student5, password will be <i>".$passwd_prefix."5</i>";
-}
-
-function delete_students() {
-  /*  1. GET ALL STUDENT ACCOUNTS */
-  $students = getStudents();
-  /*  2. REMOVE ALL ACCOUNTS */
-  delete_user($students);
-  return "All student accounts were successfully removed";
-}
-
-function delete_user($users) {
-  if($users == ""){
-    return "";
-  }
-
-  /* TODO: CHECK IF REMOVABLE USER */
   $deleted="";
-  foreach ($users as $user) {
-    $out = shell_exec('sudo deluser --remove-home ' . $user);
-    $deleted = $deleted . " " . $user;
+  $failed="";
+  foreach ($files as $file) {
+    $out=[];
+    $exit_code=-1;
+    exec("sudo /usr/local/bin/admin_tools rmfile '/raw/" . $file . ".*' 2>&1", $out, $exit_code);
+    if($exit_code == 0){
+      $deleted = $deleted . " " . $file;
+    }else{
+      $failed = $failed . " " . $file;
+    }
   }
-  return "The users " . $deleted . " have been successfully removed.";
+  $message = "";
+  if($deleted != ""){
+    $message="<p class='text-success'>The following files have been successfully removed: " . $deleted . ".</p>";
+  }
+
+  if($failed != ""){
+    $message = $message . "<p class='text-danger'>The following files were not removed: " . $failed . ".</p>";
+    $message = $message . "<b>Error log</b>";
+    $message = $message . "<pre>";
+    foreach ($out as $line) {
+      $message = $message . $line;
+    }
+    $message = $message . "</pre>";
+  }
+  return $message;
 }
 
-function getUsers() {
-  $out = shell_exec('ls /home/');
+function delete_databases($files) {
+  if($files == ""){
+    return "";
+  }
+
+  $deleted="";
+  $failed="";
+  foreach ($files as $file) {
+    $out=[];
+    $exit_code=-1;
+    exec("sudo /usr/local/bin/admin_tools rmfile '/db/" . $file . ".*' 2>&1", $out, $exit_code);
+    if($exit_code == 0){
+      $deleted = $deleted . " " . $file;
+    }else{
+      $failed = $failed . " " . $file;
+    }
+  }
+  $message = "";
+  if($deleted != ""){
+    $message="<p class='text-success'>The following databases have been successfully removed: " . $deleted . ".</p>";
+  }
+
+  if($failed != ""){
+    $message = $message . "<p class='text-danger'>The following databases were not removed: " . $failed . "</p>";
+    $message = $message . "<b>Error log</b>";
+    $message = $message . "<pre>";
+    foreach ($out as $line) {
+      $message = $message . $line;
+    }
+    $message = $message . "</pre>";
+  }
+  return $message;
+}
+
+function getFiles() {
+  $out = shell_exec('ls /raw/ | grep ".fa$"');
   return explode("\n", rtrim($out, "\n"));
 }
 
-function getStudents() {
-  $out = shell_exec('ls /home/ | grep "student[0-9]*$"');
+function getDatabases() {
+  $out = shell_exec('ls /db/ | sed s:\.[^./]*$:: | sort -u');
   return explode("\n", rtrim($out, "\n"));
+}
+
+function getNCBIDatabases() {
+  $out = shell_exec('ncbi-blast-dbs');
+  return explode(", ", rtrim($out, "\n"));
 }
 
 function validAdminSession(){

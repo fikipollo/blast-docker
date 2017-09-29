@@ -1,0 +1,23 @@
+version: '2'
+services:
+
+    instance1-blast:
+      image: fikipollo/blast
+      container_name: instance1-blast
+      depends_on:
+        - instance1-data
+      volumes_from:
+        - instance1-data
+      ports:
+        - "8094:80"
+        - "8095:4567"
+      environment:
+        - ADMIN_USER=admin
+        - ADMIN_PASS=123
+
+    instance1-data:
+      image: busybox
+      container_name: instance1-data
+      volumes:
+        - /data/instance1-data/blast2-data/db:/db
+        - /data/instance1-data/blast2-data/raw:/raw
