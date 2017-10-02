@@ -20,4 +20,4 @@ services:
       container_name: instance1-data
       volumes:
         - /data/instance1-data/blast2-data/db:/db
-        - /data/instance1-data/blast2-data/raw:/raw
+        - /data/instance1-data/blast2-data/tmp:/tmp

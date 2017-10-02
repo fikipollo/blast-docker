@@ -1,8 +1,10 @@
 # Default server configuration
 #
 
-error_log /dev/stdout error;
-access_log /dev/stdout;
+error_log /var/log/blast.log error;
+access_log /var/log/blast.log;
+
+fastcgi_read_timeout 600;
 
 server {
   listen 80 default_server;
@@ -25,6 +27,20 @@ server {
   location ~ /\.ht {
     deny all;
   }
+
+  #Rules for sequenceserver
+
+  location /blast/ {
+    location ~ (\.cgi)$ {
+      gzip off;
+      autoindex on;
+      include fastcgi_params ;
+      #fastcgi_param  DOCUMENT_ROOT /var/www/html/blast/;
+      fastcgi_pass unix:/var/run/fcgiwrap.socket;
+    }
+  }
+
+
 
   #Rules for sequenceserver
   location /sequenceserver/ {

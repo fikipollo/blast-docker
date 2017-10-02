@@ -12,14 +12,15 @@ fi
 
 htpasswd -b /etc/nginx/.htpasswd $ADMIN_USER $ADMIN_PASS
 
-#Launch nginx and rserver
-service php7.0-fpm start
-service nginx start
-
+#ADD DEFAULT DATABASES IF EMPTY
 if [ -z "$(ls -A /db)" ]; then
   tar xzvf /usr/local/src/test.tar.gz -C /db/
 fi
 
-sequenceserver -d /db & 2>&1 > /dev/stdout
+#Launch nginx and rserver
+service php7.0-fpm start
+service fcgiwrap start
+service nginx start
+service sequenceserver start
 
-tail -f /dev/stdout
+tail -f /var/log/blast.log

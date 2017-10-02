@@ -30,3 +30,4 @@ services:
       container_name: $${INSTANCE_NAME}-data
       volumes:
         - /data/$${INSTANCE_NAME}-data/db:/db
+        - /data/$${INSTANCE_NAME}-data/tmp:/tmp
