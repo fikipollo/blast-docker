@@ -37,13 +37,19 @@
 
           switch ($_POST['action']) {
             case 'download':
-            $message = download_ncbi_db($_POST['db']);
+            $message = download_ncbi_db($_POST['db'], $_POST['name']);
+            break;
+            case 'install':
+            $message = install_db($_POST['file'], $_POST['name']);
             break;
             case 'delete_files':
             $message = delete_files($_POST['delete_files']);
             break;
             case 'delete_databases':
             $message = delete_databases($_POST['delete_databases']);
+            break;
+            case 'upload_file':
+            $message = upload_file($_FILES);
             break;
           }
           unset($_POST);

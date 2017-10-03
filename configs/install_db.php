@@ -37,11 +37,23 @@
           echo "<form action='action_finished.php' method='post' >";
           echo "  <input type='hidden' name='action' value='download'>";
           echo "  <input type='hidden' name='db' value='". $_GET["db"] . "'>";
+          echo "  <div class='form-group'><label>Name for the new database:</label><input type='text' name='name' value='". $_GET["file"] . "' class='form-control'></div>";
           echo "  <button type='submit' class='btn btn-success'><i class='fa fa-download' aria-hidden='true'></i> Download database</button>";
           echo "  <a href='admin.php' class='text-danger'> or Cancel and go back to Admin site</a>";
           echo "</form>";
+        }elseif (isset($_GET['file'])) {
+          echo "<h3>Install new database</h3>";
+          echo "<p><b>Target file: </b>". $_GET["file"] . "</p>";
+          echo "<p class='text-info'>Click in the following button to start the installation process.<br>Note that this process can take several minutes. <b>Do not reload or close this window</b> until the process ends.</p>";
+          echo "<form action='action_finished.php' method='post' >";
+          echo "  <input type='hidden' name='action' value='install'>";
+          echo "  <input type='hidden' name='file' value='". $_GET["file"] . "'>";
+          echo "  <div class='form-group'><label>Name for the new database:</label><input type='text' name='name' value='". $_GET["file"] . "' class='form-control'></div>";
+          echo "  <button type='submit' class='btn btn-success'><i class='fa fa-cog' aria-hidden='true'></i> Create database</button>";
+          echo "  <a href='admin.php' class='text-danger'> or Cancel and go back to Admin site</a>";
+          echo "</form>";
         }else{
-          echo "<p class='text-danger'>Database not found, unable to download.</p>";
+          echo "<p class='text-danger'>File or database not valid, unable to continue.</p>";
           echo "<a href='admin.php' class='text-danger'> Go back to Admin site</a>";
         }
         ?>

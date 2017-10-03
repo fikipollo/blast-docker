@@ -49,6 +49,10 @@ elif [[ "$ACTION" == "build_database" ]]; then
   echo -e "y\n\n"  | sequenceserver -m -d .
 
   if [[ "$?" == "0" ]]; then
+    #MV files to /db
+    rm $PARAM_1
+    mv * /db/
+    rm -r $tmpdir
     # RESTART sequenceserver TO SHOW NEW DB
     restart_sequence_server
     exit 0
@@ -56,6 +60,12 @@ elif [[ "$ACTION" == "build_database" ]]; then
     rm -r $tmpdir
     exit 1
   fi
+elif [[ "$ACTION" == "get_max_file_size" ]]; then
+  cat /raw/.max_file_size
+  exit 0
+elif [[ "$ACTION" == "move_file" ]]; then
+  mv $PARAM_1 /raw/
+  exit 0
 elif [[ "$ACTION" == "restart_sequence_server" ]]; then
   restart_sequence_server
   exit 0

@@ -37,10 +37,10 @@
   <h1 style='color:#fff;'>Welcome to BLAST admin site</h1>
   <div style="background-color:#fff;padding: 80px 60px;" class="row">
     <div class='col-sm-6'>
-      <form action="upload_file.php" method="post" class="box"  style='margin-bottom:20px;'>
+      <form action="action_finished.php" method="post" enctype="multipart/form-data" class="box"  style='margin-bottom:20px;'>
         <h2>Upload FASTA file</h2>
         <p class='text-info'>Upload a fasta file for creating a BLAST database.</p>
-        <input type="hidden" name="action" value="create_user">
+        <input type="hidden" name="action" value="upload_file">
         <div class="form-group">
           <label for="uploaded_file">Fasta file:</label>
           <input type="file" class="form-control" id="uploaded_file" name="uploaded_file">
@@ -48,24 +48,24 @@
         <button type="submit" class="btn btn-success">Upload file</button>
         <p class='well well-sm text-info' style="margin-top:10px;">
           <i class='fa fa-info-circle'></i><b> About file uploading</b><br>
-          The max size for uploaded is currently <b>XXXX MB</b>.<br>
+          The max size for uploaded is currently <b><?php echo shell_exec("sudo /usr/local/bin/admin_tools get_max_file_size") ?> MB</b>.<br>
           Bigger files can be uploaded via FTP or directy placed in the corresponding folder.
         </p>
       </form>
-      <form action="download_ncbi_db.php" method="post" class="box">
+      <form method="post" class="box">
         <h2>Download NCBI databases</h2>
         <p class='text-info'>
           NCBI provides publicly available sequences as pre-formatted BLAST databases.<br>
           Note that some databases are huge and downloading can take several minutes.
         </p>
-        <table class="table table-striped" style="display: block; margin: auto; width: 250px; ">
-          <thead><tr><th style=" width: 200px; ">Database name</th><th></th></tr></thead>
+        <table class="table table-striped" style="display: block; margin: auto; width: 350px; ">
+          <thead><tr><th style="width: 200px; ">Database name</th><th></th></tr></thead>
           <tbody>
             <?php
             $databases = getNCBIDatabases();
             foreach ($databases as $database) {
               if($database != ""){
-                echo "<tr><td>" . $database . "</td><td><a href='download_ncbi_db.php?db=" . $database . "'><i class='fa fa-download' aria-hidden='true'></i></a></td></tr>";
+                echo "<tr><td>" . $database . "</td><td><a href='install_db.php?db=" . $database . "'><i class='fa fa-download' aria-hidden='true'></i> Install</a></td></tr>";
               }
             }
             ?>
@@ -81,14 +81,14 @@
         <button type="submit" class="btn btn-danger">Delete selected files</button>
         <table class="table table-striped">
           <thead>
-            <tr><th style=" width: 30px;"></th><th>File name</th></tr>
+            <tr><th style=" width: 30px;"></th><th>File name</th><th></th></tr>
           </thead>
           <tbody>
             <?php
             $files = getFiles();
             foreach ($files as $file) {
               if($file != ""){
-                echo "<tr><td><input type='checkbox' name='delete_files[]' value='" . $file . "'></td><td>" . $file . "</td></tr>";
+                echo "<tr><td><input type='checkbox' name='delete_files[]' value='" . $file . "'></td><td>" . $file . "</td><td><a href='install_db.php?file=" . $file . "'><i class='fa fa-cog' aria-hidden='true'></i> Install</a></td></tr>";
               }
             }
             ?>

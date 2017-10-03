@@ -23,6 +23,11 @@ RUN apt-get update \
     && gem install sequenceserver \
     && gem install ncbi-blast-dbs
 
+
+ENV ADMIN_USER=admin \
+    ADMIN_PASS=supersecret \
+    MAX_FILE_SIZE=300
+
 #Copy files
 COPY configs/* /tmp/
 

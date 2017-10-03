@@ -4,8 +4,11 @@
 #   - $${INSTANCE_NAME}, name for the instance
 #   - $${INSTANCE_PORT_1}, port number 1 for the instance (nginx)
 #   - $${INSTANCE_PORT_2}, port number 2 for the instance (Sequenceserver)
+#   - $${INSTANCE_PORT_3}, port number 3 for the instance (FTP server)
 #   - $${ADMIN_USER}, name for admin user
 #   - $${ADMIN_PASS}, password for admin user
+#   - $${FTP_USER}, name for ftp user
+#   - $${FTP_PASS}, password for ftp user
 ############################################################
 
 version: '2'
@@ -14,6 +17,9 @@ services:
     $${INSTANCE_NAME}-blast:
       image: fikipollo/blast
       container_name: $${INSTANCE_NAME}-blast
+      environment:
+        - ADMIN_USER=$${ADMIN_USER}
+        - ADMIN_PASS=$${ADMIN_PASS}
       depends_on:
         - $${INSTANCE_NAME}-data
       volumes_from:
@@ -21,13 +27,28 @@ services:
       ports:
         - "$${INSTANCE_PORT_1}:80"
         - "$${INSTANCE_PORT_2}:4567"
+
+    $${INSTANCE_NAME}-vsftpd:
+      image: fikipollo/vsftpd
+      container_name: $${INSTANCE_NAME}-vsftpd
       environment:
-        - ADMIN_USER=$${ADMIN_USER}
-        - ADMIN_PASS=$${ADMIN_PASS}
+        - FTP_USER=$${FTP_USER}
+        - FTP_PASS=$${FTP_PASS}
+        - ONLY_UPLOAD=YES
+        - PASV_ENABLE=NO
+        - FTP_HOME=/raw
+        - UMASK=000
+      depends_on:
+        - $${INSTANCE_NAME}-data
+      volumes_from:
+        - $${INSTANCE_NAME}-data
+      ports:
+        - "$${INSTANCE_PORT_3}:21"
 
     $${INSTANCE_NAME}-data:
       image: busybox
       container_name: $${INSTANCE_NAME}-data
       volumes:
         - /data/$${INSTANCE_NAME}-data/db:/db
+        - /data/$${INSTANCE_NAME}-data/raw:/raw
         - /data/$${INSTANCE_NAME}-data/tmp:/tmp

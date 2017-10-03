@@ -4,6 +4,9 @@ services:
     instance1-blast:
       image: fikipollo/blast
       container_name: instance1-blast
+      environment:
+        - ADMIN_USER=admin
+        - ADMIN_PASS=123
       depends_on:
         - instance1-data
       volumes_from:
@@ -11,13 +14,28 @@ services:
       ports:
         - "8094:80"
         - "8095:4567"
+
+    instance1-vsftpd:
+      image: fikipollo/vsftpd
+      container_name: instance1-vsftpd
       environment:
-        - ADMIN_USER=admin
-        - ADMIN_PASS=123
+        - FTP_USER=ftpuser
+        - FTP_PASS=supersecret
+        - ONLY_UPLOAD=YES
+        - PASV_ENABLE=NO
+        - FTP_HOME=/raw
+        - UMASK=000
+      depends_on:
+        - instance1-data
+      volumes_from:
+        - instance1-data
+      ports:
+        - "8096:21"
 
     instance1-data:
       image: busybox
       container_name: instance1-data
       volumes:
-        - /data/instance1-data/blast2-data/db:/db
-        - /data/instance1-data/blast2-data/tmp:/tmp
+        - /data/instance1-data/blast-data/db:/db
+        - /data/instance1-data/blast-data/raw:/raw
+        - /data/instance1-data/blast-data/tmp:/tmp
