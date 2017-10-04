@@ -70,6 +70,7 @@ The BLAST docker accepts the following variables that modify the behavior of the
 
     - **ADMIN_USER**, the name for the admin account. Using this account you can access to the admin portal (e.g. [http://yourserver:8072/admin.php](http://yourserver:8072/admin.php)) and manipulate the registered users in the system.
     - **ADMIN_PASS**, the password for the admin user.
+    - **MAX_FILE_SIZE**, max file size for file upload (in MB). Bigger files should be uploaded using other protocol (e.g. using FTP).
 
 
 # Version log
