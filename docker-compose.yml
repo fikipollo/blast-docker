@@ -8,6 +8,7 @@ services:
         - ADMIN_USER=admin
         - ADMIN_PASS=123
         - MAX_FILE_SIZE=50
+        - CPU_NUMBER=5
       depends_on:
         - instance1-data
       volumes_from:

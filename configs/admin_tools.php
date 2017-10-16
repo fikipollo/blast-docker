@@ -80,7 +80,7 @@ function install_db($file, $name){
     $message = $message .  "<p>Creating database...";
     $out=[];
     $exit_code=-1;
-    exec("sudo /usr/local/bin/admin_tools build_database " . $file . " " . $name " 2>&1", $out, $exit_code);
+    exec("sudo /usr/local/bin/admin_tools build_database " . $file . " " . $name . " 2>&1", $out, $exit_code);
     if($exit_code == 0){
       $message = $message .  "<span class='text-success'>Done.</span></p>";
     }else{

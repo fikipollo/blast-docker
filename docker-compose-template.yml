@@ -8,6 +8,7 @@
 #   - $${ADMIN_USER}, name for admin user
 #   - $${ADMIN_PASS}, password for admin user
 #   - $${MAX_FILE_SIZE}, max file size for normal upload (no FTP, in MB)
+#   - $${CPU_NUMBER}, number of cpus for running BLAST
 #   - $${FTP_USER}, name for ftp user
 #   - $${FTP_PASS}, password for ftp user
 ############################################################
@@ -22,6 +23,7 @@ services:
         - ADMIN_USER=$${ADMIN_USER}
         - ADMIN_PASS=$${ADMIN_PASS}
         - MAX_FILE_SIZE=$${MAX_FILE_SIZE}
+        - CPU_NUMBER=$${CPU_NUMBER}
       depends_on:
         - $${INSTANCE_NAME}-data
       volumes_from:

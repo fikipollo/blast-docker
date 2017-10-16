@@ -4,69 +4,89 @@ ACTION=$1
 PARAM_1=$2
 
 function restart_sequence_server {
-  service sequenceserver stop
-  if [ -z "$(ls -A /db)" ]; then
-    tar xzvf /usr/local/src/test.tar.gz -C /db/
-  fi
-  cd /db
-  service sequenceserver start
+    service sequenceserver stop
+    if [ -z "$(ls -A /db)" ]; then
+        cp -r /usr/local/src/original_db/* /db/
+    fi
+    cd /db
+    cpu_numbers=$(cat /raw/.cpu_numbers)
+    python /var/www/html/blast/update_databases.py -d /db -b /var/www/html/blast -c $cpu_numbers
+    service sequenceserver start
 }
 
 if [[ "$ACTION" == "rmfile" ]]; then
-  cwd=$(dirname $PARAM_1)
-  cd $cwd
-  cwd=$(pwd)
-  # IF A DATABASE WAS REMOVED,NEED TO RESTART sequenceserver
-  if [[ "$cwd" == "/db" ]]; then
-    rm $PARAM_1
-    restart_sequence_server
-    exit $?
-  elif [[ "$cwd" == "/raw" ]]; then
-      rm $PARAM_1
-      exit $?
-  else
-    exit 1
-  fi
+    cwd=$(dirname $PARAM_1)
+    cd $cwd
+    cwd=$(pwd)
+    # IF A DATABASE WAS REMOVED,NEED TO RESTART sequenceserver
+    if [[ "$cwd" == "/db" ]]; then
+        rm $PARAM_1
+        restart_sequence_server
+        exit $?
+    elif [[ "$cwd" == "/raw" ]]; then
+        rm $PARAM_1
+        exit $?
+    else
+        exit 1
+    fi
 elif [[ "$ACTION" == "download_ncbi_db" ]]; then
-  tmpdir=$(mktemp -d);
-  cd $tmpdir;
-  ncbi-blast-dbs $PARAM_1;
-  if [[ "$?" == "0" ]]; then
-    rm *.tar.gz*
-    mv * /db/
-    rm -r $tmpdir
-    # RESTART sequenceserver TO SHOW NEW DB
-    restart_sequence_server
-    exit 0
-  else
-    rm -r $tmpdir
-    exit 1
-  fi
-elif [[ "$ACTION" == "build_database" ]]; then
-  tmpdir=$(mktemp -d);
-  cd $tmpdir;
-  cp /raw/$PARAM_1 .
-  echo -e "y\n\n"  | sequenceserver -m -d .
+    tmpdir=$(mktemp -d);
+    cd $tmpdir;
+    ncbi-blast-dbs $PARAM_1;
+    if [[ "$?" == "0" ]]; then
+        PARAM_2=$3
+        if [[ "$PARAM_2" == "" ]]; then
+            PARAM_2=$PARAM_1
+        fi
+        rm *.tar.gz*
 
-  if [[ "$?" == "0" ]]; then
-    #MV files to /db
-    rm $PARAM_1
-    mv * /db/
-    rm -r $tmpdir
-    # RESTART sequenceserver TO SHOW NEW DB
+        for f in *; do
+            filename=$(basename "$f")
+            extension="${filename##*.}"
+            mv $f "$PARAM_2.$extension";
+        done
+
+        mv * /db/
+        rm -r $tmpdir
+        # RESTART sequenceserver TO SHOW NEW DB
+        restart_sequence_server
+        exit 0
+    else
+        rm -r $tmpdir
+        exit 1
+    fi
+elif [[ "$ACTION" == "build_database" ]]; then
+    tmpdir=$(mktemp -d);
+    cd $tmpdir;
+
+    PARAM_2=$3
+    if [[ "$PARAM_2" == "" ]]; then
+        PARAM_2=$PARAM_1
+    fi
+
+    cp /raw/$PARAM_1 ./$PARAM_2
+
+    echo -e "y\n\n"  | sequenceserver -m -d .
+
+    if [[ "$?" == "0" ]]; then
+        #MV files to /db
+        rm $PARAM_2
+        mv * /db/
+        rm -r $tmpdir
+        # RESTART sequenceserver TO SHOW NEW DB
+        restart_sequence_server
+        exit 0
+    else
+        rm -r $tmpdir
+        exit 1
+    fi
+elif [[ "$ACTION" == "get_max_file_size" ]]; then
+    cat /raw/.max_file_size
+    exit 0
+elif [[ "$ACTION" == "move_file" ]]; then
+    mv $PARAM_1 /raw/
+    exit 0
+elif [[ "$ACTION" == "restart_sequence_server" ]]; then
     restart_sequence_server
     exit 0
-  else
-    rm -r $tmpdir
-    exit 1
-  fi
-elif [[ "$ACTION" == "get_max_file_size" ]]; then
-  cat /raw/.max_file_size
-  exit 0
-elif [[ "$ACTION" == "move_file" ]]; then
-  mv $PARAM_1 /raw/
-  exit 0
-elif [[ "$ACTION" == "restart_sequence_server" ]]; then
-  restart_sequence_server
-  exit 0
 fi
