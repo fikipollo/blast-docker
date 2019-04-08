@@ -18,6 +18,9 @@ echo ":num_threads: $CPU_NUMBER" >> ~/.sequenceserver.conf
 echo $MAX_FILE_SIZE > /raw/.max_file_size
 echo $CPU_NUMBER > /raw/.cpu_numbers
 
+rm -r /var/www/html/blast/TmpGifs
+mkdir /tmp/TmpGifs
+ln -s /tmp/TmpGifs /var/www/html/blast/TmpGifs
 chmod -R 777 /tmp
 
 python /var/www/html/blast/update_databases.py -d /db -b /var/www/html/blast -c $CPU_NUMBER
