@@ -74,4 +74,5 @@ The BLAST docker accepts the following variables that modify the behavior of the
 
 
 # Version log
-  - v0.9 September 2017: First version of the docker.
+  - v0.9 April 2019: Fixed issues with TmpGifs (Issue #1)
+  - v0.1 September 2017: First version of the docker.
